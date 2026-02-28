@@ -27,7 +27,7 @@ menu = st.sidebar.radio("Go to:", ["EDA & Clustering (Demand Analysis)", "Risk P
 # --- Cache Data Loading ---
 @st.cache_data
 def load_data():
-    file_path = '/Users/bankimkamila/.cache/kagglehub/datasets/dmitrynikolaev/youtube-dislikes-dataset/versions/2/youtube_dislike_dataset.csv'
+    file_path = 'archive/youtube_dislike_dataset.csv'
     try:
         df = pd.read_csv(file_path)
     except FileNotFoundError:
