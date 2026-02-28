@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Risk Forecaster</title>
+    <title>YouTube Risk Forecaster & Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
@@ -30,17 +31,14 @@
             background: var(--bg-gradient);
             color: var(--text-main);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 2rem;
-            overflow-x: hidden;
             position: relative;
+            overflow-x: hidden;
         }
 
         /* Ambient Orbs */
         .orb {
-            position: absolute;
+            position: fixed;
             border-radius: 50%;
             filter: blur(80px);
             z-index: 0;
@@ -48,18 +46,18 @@
         }
 
         .orb-1 {
-            width: 400px;
-            height: 400px;
-            background: rgba(139, 92, 246, 0.3);
+            width: 500px;
+            height: 500px;
+            background: rgba(139, 92, 246, 0.15);
             top: -100px;
             left: -100px;
             animation-delay: 0s;
         }
 
         .orb-2 {
-            width: 300px;
-            height: 300px;
-            background: rgba(239, 68, 68, 0.2);
+            width: 400px;
+            height: 400px;
+            background: rgba(239, 68, 68, 0.1);
             bottom: -50px;
             right: 10%;
             animation-delay: -5s;
@@ -75,43 +73,50 @@
             }
         }
 
-        .container {
+        .layout-wrapper {
             position: relative;
             z-index: 1;
-            width: 100%;
-            max-width: 600px;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            gap: 2rem;
+        }
+
+        .glass-card {
             background: var(--glass-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
-            padding: 3rem;
+            padding: 2rem;
             box-shadow: var(--glass-shadow);
         }
 
         .header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             background: linear-gradient(to right, #fff, #a5b4fc);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: -0.02em;
         }
 
         p.subtitle {
             color: var(--text-muted);
-            line-height: 1.6;
-            font-size: 1.05rem;
+            line-height: 1.5;
+            font-size: 0.95rem;
         }
 
         .form-group {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         label {
@@ -119,7 +124,7 @@
             margin-bottom: 0.5rem;
             font-weight: 500;
             color: #cbd5e1;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
@@ -129,9 +134,9 @@
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid var(--glass-border);
             border-radius: 12px;
-            padding: 1rem 1.25rem;
+            padding: 0.8rem 1rem;
             color: white;
-            font-size: 1.1rem;
+            font-size: 1rem;
             transition: all 0.3s ease;
             outline: none;
         }
@@ -149,12 +154,10 @@
             border: none;
             border-radius: 12px;
             padding: 1rem;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         button:hover {
@@ -167,9 +170,8 @@
             transform: translateY(0);
         }
 
-        /* Results Area */
         .result-card {
-            margin-top: 2rem;
+            margin-top: 1.5rem;
             border-radius: 16px;
             padding: 1.5rem;
             opacity: 0;
@@ -196,12 +198,9 @@
         }
 
         .result-title {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
         .high-risk .result-title {
@@ -214,17 +213,17 @@
 
         .prob-bar-bg {
             width: 100%;
-            height: 8px;
+            height: 6px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 4px;
+            border-radius: 3px;
             margin-top: 1rem;
             overflow: hidden;
         }
 
         .prob-bar-fill {
             height: 100%;
-            border-radius: 4px;
-            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 3px;
+            transition: width 1s ease;
             width: 0%;
         }
 
@@ -241,15 +240,74 @@
             text-align: center;
             margin-top: 1.5rem;
             color: var(--text-muted);
+            font-size: 0.9rem;
         }
 
-        @media (max-width: 640px) {
-            .container {
-                padding: 2rem;
+        /* Dashboard Styles */
+        .dashboard-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+
+        .kpi-card {
+            padding: 1.5rem;
+        }
+
+        .kpi-card h3 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-card p {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .chart-card {
+            padding: 1.5rem;
+        }
+
+        .chart-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .layout-wrapper {
+                grid-template-columns: 1fr;
             }
 
-            h1 {
-                font-size: 2rem;
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -259,88 +317,125 @@
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
-    <div class="container">
-        <div class="header">
-            <h1>Risk Forecaster</h1>
-            <p class="subtitle">Predict the likelihood of a YouTube video receiving negative reception (Dislike Ratio >
-                5%) before it escalates.</p>
+    <div class="layout-wrapper">
+        <!-- Predictor Side -->
+        <div class="glass-card predict-card" style="align-self: start;">
+            <div class="header">
+                <h1>Risk Forecaster</h1>
+                <p class="subtitle">Predict the likelihood of a YouTube video receiving negative reception (Dislike
+                    Ratio > 5%).</p>
+            </div>
+
+            <form id="predictionForm">
+                <div class="form-group">
+                    <label for="views">Estimated Views</label>
+                    <input type="number" id="views" required min="0" placeholder="e.g., 1000000" value="1000000">
+                </div>
+                <div class="form-group">
+                    <label for="comments">Estimated Comments</label>
+                    <input type="number" id="comments" required min="0" placeholder="e.g., 50000" value="50000">
+                </div>
+                <button type="submit" id="submitBtn">Analyze Risk Profile</button>
+            </form>
+
+            <div class="loading" id="loading">Analyzing video metrics...</div>
+
+            <div class="result-card" id="resultCard">
+                <div class="result-title" id="resultTitle"></div>
+                <p class="subtitle" id="resultDesc" style="margin-top: 0.5rem; color: #cbd5e1;"></p>
+                <div
+                    style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.85rem; color: #94a3b8;">
+                    <span>Probability of High Risk</span>
+                    <span id="probText">0%</span>
+                </div>
+                <div class="prob-bar-bg">
+                    <div class="prob-bar-fill" id="probBar"></div>
+                </div>
+            </div>
         </div>
 
-        <form id="predictionForm">
-            <div class="form-group">
-                <label for="views">Estimated Views</label>
-                <input type="number" id="views" required min="0" placeholder="e.g., 1000000" value="1000000">
+        <!-- Dashboard Side -->
+        <div class="dashboard-section">
+            <div class="kpi-grid">
+                <div class="glass-card kpi-card">
+                    <h3>Total Videos</h3>
+                    <p id="kpi-videos">...</p>
+                </div>
+                <div class="glass-card kpi-card">
+                    <h3>Avg Views</h3>
+                    <p id="kpi-views">...</p>
+                </div>
+                <div class="glass-card kpi-card">
+                    <h3>Avg Likes</h3>
+                    <p id="kpi-likes">...</p>
+                </div>
+                <div class="glass-card kpi-card">
+                    <h3>Avg Dislike Ratio</h3>
+                    <p id="kpi-ratio">...</p>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="comments">Estimated Comments</label>
-                <input type="number" id="comments" required min="0" placeholder="e.g., 50000" value="50000">
-            </div>
-
-            <button type="submit" id="submitBtn">Analyze Risk Profile</button>
-        </form>
-
-        <div class="loading" id="loading">
-            Analyzing video metrics...
-        </div>
-
-        <div class="result-card" id="resultCard">
-            <div class="result-title" id="resultTitle">
-                <!-- Injected via JS -->
-            </div>
-            <p class="subtitle" id="resultDesc" style="margin-top: 0.5rem; color: #cbd5e1;">
-                <!-- Injected via JS -->
-            </p>
-            <div
-                style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.9rem; color: #94a3b8;">
-                <span>Probability of High Risk</span>
-                <span id="probText">0%</span>
-            </div>
-            <div class="prob-bar-bg">
-                <div class="prob-bar-fill" id="probBar"></div>
+            <div class="charts-grid">
+                <div class="glass-card chart-card">
+                    <h3>Dislike Ratio Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="distChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass-card chart-card">
+                    <h3>Demand Segmentation (K-Means)</h3>
+                    <div class="chart-container">
+                        <canvas id="clusterChart"></canvas>
+                    </div>
+                </div>
+                <div class="glass-card chart-card" style="grid-column: 1 / -1;">
+                    <h3>Feature Correlations (vs Dislike Ratio)</h3>
+                    <div class="chart-container" style="height: 250px;">
+                        <canvas id="corrChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION ---
-        // IMPORTANT: Change this URL to your live Render backend URL after deploying!
-        // Example: const API_URL = "https://youtube-risk-api.onrender.com/predict";
-        const API_URL = "https://youtube-dislikes-dataset.onrender.com/predict";
+        // Use localhost if running locally, otherwise Render URL
+        const BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://127.0.0.1:8002'
+            : 'https://youtube-dislikes-dataset.onrender.com';
 
+        const PREDICT_URL = `${BASE_URL}/predict`;
+        const DASHBOARD_URL = `${BASE_URL}/api/dashboard-data`;
+
+        // Configure Chart.js defaults for dark theme
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+        Chart.defaults.font.family = "'Inter', sans-serif";
+
+        // --- PREDICTOR LOGIC ---
         document.getElementById('predictionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const views = document.getElementById('views').value;
             const comments = document.getElementById('comments').value;
-
             const btn = document.getElementById('submitBtn');
             const loading = document.getElementById('loading');
             const resultCard = document.getElementById('resultCard');
 
-            // UI Update
             btn.disabled = true;
             btn.style.opacity = '0.7';
             loading.style.display = 'block';
             resultCard.classList.remove('active', 'high-risk', 'low-risk');
 
             try {
-                const response = await fetch(API_URL, {
+                const response = await fetch(PREDICT_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        view_count: parseFloat(views),
-                        comment_count: parseFloat(comments)
-                    })
+                    body: JSON.stringify({ view_count: parseFloat(views), comment_count: parseFloat(comments) })
                 });
 
-                if (!response.ok) {
-                    throw new Error("Failed to connect to the prediction server. Ensure the Render backend is running and the API_URL in the script is correct.");
-                }
-
+                if (!response.ok) throw new Error("Failed to connect to the prediction server.");
                 const data = await response.json();
                 displayResult(data.prediction, data.probability);
-
             } catch (error) {
                 alert(error.message);
             } finally {
@@ -356,7 +451,6 @@
             const desc = document.getElementById('resultDesc');
             const probText = document.getElementById('probText');
             const probBar = document.getElementById('probBar');
-
             const probPercent = (probability * 100).toFixed(1) + '%';
 
             if (prediction === 'High Risk') {
@@ -370,15 +464,135 @@
             }
 
             probText.textContent = probPercent;
-
-            // Trigger animation
             resultCard.classList.add('active');
-
-            // Small delay for the bar animation to hit after fade in
-            setTimeout(() => {
-                probBar.style.width = probPercent;
-            }, 100);
+            setTimeout(() => { probBar.style.width = probPercent; }, 100);
         }
+
+        // --- DASHBOARD LOGIC ---
+        async function loadDashboard() {
+            try {
+                const res = await fetch(DASHBOARD_URL);
+                if (!res.ok) throw new Error("Dashboard data not found");
+                const data = await res.json();
+
+                // Update KPIs
+                document.getElementById('kpi-videos').textContent = data.summary.total_videos.toLocaleString();
+                document.getElementById('kpi-views').textContent = formatNumber(data.summary.avg_views);
+                document.getElementById('kpi-likes').textContent = formatNumber(data.summary.avg_likes);
+                document.getElementById('kpi-ratio').textContent = (data.summary.avg_dislike_ratio * 100).toFixed(2) + '%';
+
+                // Render Charts
+                renderDistChart(data.dislike_ratio_dist);
+                renderClusterChart(data.clusters);
+                renderCorrChart(data.correlation);
+
+            } catch (err) {
+                console.error("Dashboard data load error:", err);
+            }
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num.toFixed(0);
+        }
+
+        function renderDistChart(data) {
+            const ctx = document.getElementById('distChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: data.bins.map(b => (b * 100).toFixed(1) + '%'),
+                    datasets: [{
+                        label: 'Video Count',
+                        data: data.counts,
+                        backgroundColor: 'rgba(139, 92, 246, 0.6)',
+                        borderColor: 'rgba(139, 92, 246, 1)',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true },
+                        x: { display: true, ticks: { maxTicksLimit: 10 } }
+                    }
+                }
+            });
+        }
+
+        function renderClusterChart(data) {
+            const ctx = document.getElementById('clusterChart').getContext('2d');
+            const colors = ['rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(59, 130, 246, 0.6)'];
+
+            const datasets = [0, 1, 2].map(c => ({
+                label: `Cluster ${c}`,
+                data: data.points.filter(p => p.cluster === c),
+                backgroundColor: colors[c],
+                pointRadius: 4,
+                pointHoverRadius: 6
+            }));
+
+            new Chart(ctx, {
+                type: 'scatter',
+                data: { datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { type: 'logarithmic', title: { display: true, text: 'Views' } },
+                        y: { type: 'logarithmic', title: { display: true, text: 'Likes' } }
+                    }
+                }
+            });
+        }
+
+        function renderCorrChart(data) {
+            const ctx = document.getElementById('corrChart').getContext('2d');
+            const targetIdx = data.variables.indexOf('dislike_ratio');
+            const targetCorrs = data.matrix[targetIdx];
+
+            const labels = [];
+            const values = [];
+            const bgColors = [];
+
+            data.variables.forEach((v, i) => {
+                if (v !== 'dislike_ratio') {
+                    labels.push(v);
+                    values.push(targetCorrs[i]);
+                    bgColors.push(targetCorrs[i] > 0 ? 'rgba(239, 68, 68, 0.6)' : 'rgba(16, 185, 129, 0.6)');
+                }
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Correlation',
+                        data: values,
+                        backgroundColor: bgColors,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { min: -1, max: 1 },
+                        y: {}
+                    }
+                }
+            });
+        }
+
+        // Init
+        loadDashboard();
     </script>
 </body>
 

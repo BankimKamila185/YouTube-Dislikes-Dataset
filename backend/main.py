@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import joblib
+import json
 import numpy as np
 import pandas as pd
 import os
@@ -66,3 +67,12 @@ def predict_risk(request: RiskRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/api/dashboard-data")
+def get_dashboard_data():
+    data_path = os.path.join(os.path.dirname(__file__), 'data', 'dashboard_data.json')
+    try:
+        with open(data_path, 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Dashboard data not found. Please run the data preparation script.")
