@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Risk Forecaster</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #8b5cf6;
+            --accent-hover: #7c3aed;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Ambient Orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            animation: float 20s infinite ease-in-out alternate;
+        }
+        .orb-1 { width: 400px; height: 400px; background: rgba(139, 92, 246, 0.3); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: rgba(239, 68, 68, 0.2); bottom: -50px; right: 10%; animation-delay: -5s; }
+
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(50px) scale(1.1); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 600px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 3rem;
+            box-shadow: var(--glass-shadow);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        p.subtitle {
+            color: var(--text-muted);
+            line-height: 1.6;
+            font-size: 1.05rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        button {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(139, 92, 246, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* Results Area */
+        .result-card {
+            margin-top: 2rem;
+            border-radius: 16px;
+            padding: 1.5rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.5s ease;
+            display: none;
+            border: 1px solid transparent;
+        }
+
+        .result-card.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result-card.high-risk {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .result-card.low-risk {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .high-risk .result-title { color: var(--danger); }
+        .low-risk .result-title { color: var(--success); }
+
+        .prob-bar-bg {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 1rem;
+            overflow: hidden;
+        }
+
+        .prob-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 0%;
+        }
+
+        .high-risk .prob-bar-fill { background: var(--danger); }
+        .low-risk .prob-bar-fill { background: var(--success); }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 640px) {
+            .container { padding: 2rem; }
+            h1 { font-size: 2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>Risk Forecaster</h1>
+            <p class="subtitle">Predict the likelihood of a YouTube video receiving negative reception (Dislike Ratio > 5%) before it escalates.</p>
+        </div>
+
+        <form id="predictionForm">
+            <div class="form-group">
+                <label for="views">Estimated Views</label>
+                <input type="number" id="views" required min="0" placeholder="e.g., 1000000" value="1000000">
+            </div>
+
+            <div class="form-group">
+                <label for="comments">Estimated Comments</label>
+                <input type="number" id="comments" required min="0" placeholder="e.g., 50000" value="50000">
+            </div>
+
+            <button type="submit" id="submitBtn">Analyze Risk Profile</button>
+        </form>
+
+        <div class="loading" id="loading">
+            Analyzing video metrics...
+        </div>
+
+        <div class="result-card" id="resultCard">
+            <div class="result-title" id="resultTitle">
+                <!-- Injected via JS -->
+            </div>
+            <p class="subtitle" id="resultDesc" style="margin-top: 0.5rem; color: #cbd5e1;">
+                <!-- Injected via JS -->
+            </p>
+            <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.9rem; color: #94a3b8;">
+                <span>Probability of High Risk</span>
+                <span id="probText">0%</span>
+            </div>
+            <div class="prob-bar-bg">
+                <div class="prob-bar-fill" id="probBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // IMPORTANT: Change this URL to your live Render backend URL after deploying!
+        // Example: const API_URL = "https://youtube-risk-api.onrender.com/predict";
+        const API_URL = "http://localhost:8000/predict"; 
+
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const views = document.getElementById('views').value;
+            const comments = document.getElementById('comments').value;
+            
+            const btn = document.getElementById('submitBtn');
+            const loading = document.getElementById('loading');
+            const resultCard = document.getElementById('resultCard');
+            
+            // UI Update
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+            loading.style.display = 'block';
+            resultCard.classList.remove('active', 'high-risk', 'low-risk');
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        view_count: parseFloat(views),
+                        comment_count: parseFloat(comments)
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to connect to the prediction server. Ensure the Render backend is running and the API_URL in the script is correct.");
+                }
+
+                const data = await response.json();
+                displayResult(data.prediction, data.probability);
+                
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                loading.style.display = 'none';
+            }
+        });
+
+        function displayResult(prediction, probability) {
+            const resultCard = document.getElementById('resultCard');
+            const title = document.getElementById('resultTitle');
+            const desc = document.getElementById('resultDesc');
+            const probText = document.getElementById('probText');
+            const probBar = document.getElementById('probBar');
+            
+            const probPercent = (probability * 100).toFixed(1) + '%';
+            
+            if (prediction === 'High Risk') {
+                resultCard.classList.add('high-risk');
+                title.innerHTML = '⚠️ HIGH RISK DETECTED';
+                desc.textContent = 'The model predicts this video is likely to have a dislike ratio > 5%. Platforms can preemptively adjust ad-bidding strategies or flag it for review to protect brand safety.';
+            } else {
+                resultCard.classList.add('low-risk');
+                title.innerHTML = '✅ LOW RISK DETECTED';
+                desc.textContent = 'The model predicts this video will have a normal/low dislike ratio. Safe for standard monetization streams.';
+            }
+            
+            probText.textContent = probPercent;
+            
+            // Trigger animation
+            resultCard.classList.add('active');
+            
+            // Small delay for the bar animation to hit after fade in
+            setTimeout(() => {
+                probBar.style.width = probPercent;
+            }, 100);
+        }
+    </script>
+</body>
+</html>
