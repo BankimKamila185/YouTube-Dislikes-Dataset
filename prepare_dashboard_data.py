@@ -76,6 +76,16 @@ def prepare_data():
         'avg_dislike_ratio': float(df['dislike_ratio'].mean())
     }
 
+    print("5. Extracting Dataset Sample...")
+    # Get 10 random rows for the data table
+    sample_columns = ['video_id', 'title', 'channelId', 'view_count', 'likes', 'dislikes', 'comment_count']
+    # Filter columns that exist
+    available_cols = [col for col in sample_columns if col in df.columns]
+    
+    # Fill NAs and convert to dict records
+    sample_records = df[available_cols].sample(n=min(10, len(df)), random_state=42).fillna('').to_dict(orient='records')
+    dashboard_data['sample_data'] = sample_records
+
     # Save to JSON
     output_dir = 'backend/data'
     os.makedirs(output_dir, exist_ok=True)

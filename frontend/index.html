@@ -103,6 +103,7 @@
             font-weight: 700;
             font-size: 1.2rem;
             background: linear-gradient(to right, #fff, #a5b4fc);
+            background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
         }
@@ -195,6 +196,48 @@
             font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+        }
+
+        /* Table Styles */
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--glass-border);
+            white-space: nowrap;
+        }
+
+        .data-table th {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+            color: #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.8rem;
+        }
+
+        .data-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .text-truncate {
+            max-width: 250px;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* Visual Blocks / Glass Cards */
@@ -418,6 +461,7 @@
         <div class="nav-logo">YT Risk Analysis</div>
         <div class="nav-links">
             <a href="#overview">Overview</a>
+            <a href="#dataset">Dataset</a>
             <a href="#predictor">AI Predictor</a>
             <a href="#distribution">Distribution</a>
             <a href="#correlation">Correlation</a>
@@ -453,6 +497,39 @@
                 <div class="kpi-card">
                     <h3>Avg Dislike Ratio</h3>
                     <p id="kpi-ratio">...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: DATASET TABLE -->
+    <section id="dataset">
+        <div class="container full-width-container">
+            <div class="content-block" style="text-align: center; margin-bottom: 2rem;">
+                <h2>The Raw Data</h2>
+                <p style="max-width: 800px; margin: 0 auto;">A sample of the underlying dataset powering our analysis.
+                    This dataset comprises over 37,000 YouTube videos containing vital engagement metrics like Views,
+                    Likes, Dislikes, and Comments, alongside identifying metadata.</p>
+            </div>
+
+            <div class="glass-card" style="padding: 1.5rem;">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Video ID</th>
+                                <th>Title</th>
+                                <th>Channel ID</th>
+                                <th>Views</th>
+                                <th>Likes</th>
+                                <th>Dislikes</th>
+                                <th>Comments</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- Rows will be injected here via JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -559,7 +636,8 @@
                     <p style="margin:0; font-size:1rem;">Notice the strongest positive correlation exists between
                         <strong>Comments and Dislike Ratio</strong>. Highly polarizing or negative content drives
                         debate, inflating the comment section at a rate disproportional to likes. This justifies our
-                        model's heavy reliance on early comment volume.</p>
+                        model's heavy reliance on early comment volume.
+                    </p>
                 </div>
             </div>
             <div class="visual-block">
@@ -684,12 +762,32 @@
                 document.getElementById('kpi-likes').textContent = formatNumber(data.summary.avg_likes);
                 document.getElementById('kpi-ratio').textContent = (data.summary.avg_dislike_ratio * 100).toFixed(2) + '%';
 
+                renderTable(data.sample_data);
                 renderDistChart(data.dislike_ratio_dist);
                 renderClusterChart(data.clusters);
                 renderCorrChart(data.correlation);
             } catch (err) {
                 console.error("Dashboard data load error:", err);
             }
+        }
+
+        function renderTable(samples) {
+            const tbody = document.getElementById('dataTableBody');
+            if (!samples || samples.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 2rem;">Data sample not available.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = samples.map(row => `
+                <tr>
+                    <td><code>${row.video_id || ''}</code></td>
+                    <td class="text-truncate" title="${row.title || ''}">${row.title || ''}</td>
+                    <td><code style="color:var(--text-muted)">${row.channelId || ''}</code></td>
+                    <td style="color:var(--success)">${formatNumber(row.view_count || 0)}</td>
+                    <td>${formatNumber(row.likes || 0)}</td>
+                    <td style="color:var(--danger)">${formatNumber(row.dislikes || 0)}</td>
+                    <td style="color:var(--accent)">${formatNumber(row.comment_count || 0)}</td>
+                </tr>
+            `).join('');
         }
 
         function formatNumber(num) {
