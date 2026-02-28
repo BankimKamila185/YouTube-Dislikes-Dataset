@@ -4,63 +4,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YouTube Risk Forecaster & Dashboard</title>
+    <title>YouTube Risk Forecaster & Analysis</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --bg-gradient: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --accent: #8b5cf6;
-            --accent-hover: #7c3aed;
+            --accent: #6d28d9;
+            --accent-hover: #5b21b6;
             --danger: #ef4444;
             --success: #10b981;
+            --nav-bg: rgba(15, 23, 42, 0.8);
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, sans-serif;
         }
 
         body {
             background: var(--bg-gradient);
             color: var(--text-main);
-            min-height: 100vh;
-            padding: 2rem;
-            position: relative;
             overflow-x: hidden;
+            scroll-behavior: smooth;
         }
 
-        /* Ambient Orbs */
+        /* Fixed Background Orbs */
         .orb {
             position: fixed;
             border-radius: 50%;
-            filter: blur(80px);
-            z-index: 0;
+            filter: blur(100px);
+            z-index: -1;
             animation: float 20s infinite ease-in-out alternate;
         }
 
         .orb-1 {
-            width: 500px;
-            height: 500px;
-            background: rgba(139, 92, 246, 0.15);
-            top: -100px;
+            width: 600px;
+            height: 600px;
+            background: rgba(109, 40, 217, 0.15);
+            top: -200px;
             left: -100px;
             animation-delay: 0s;
         }
 
         .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: rgba(239, 68, 68, 0.1);
+            bottom: -100px;
+            right: -50px;
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
             width: 400px;
             height: 400px;
-            background: rgba(239, 68, 68, 0.1);
-            bottom: -50px;
-            right: 10%;
-            animation-delay: -5s;
+            background: rgba(16, 185, 129, 0.1);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -10s;
         }
 
         @keyframes float {
@@ -73,50 +82,173 @@
             }
         }
 
-        .layout-wrapper {
-            position: relative;
-            z-index: 1;
-            max-width: 1400px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: 450px 1fr;
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1rem 2rem;
+            background: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            background: linear-gradient(to right, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
             gap: 2rem;
         }
 
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: white;
+        }
+
+        /* Section Layout */
+        section {
+            min-height: 100vh;
+            padding: 80px 2rem 4rem 2rem;
+            /* Account for fixed nav */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--glass-border);
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-container {
+            grid-template-columns: 1fr;
+            text-align: center;
+            max-width: 800px;
+        }
+
+        .reverse .container {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .reverse .content-block {
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .reverse .visual-block {
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        /* Content Blocks & Typography */
+        .content-block h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            font-weight: 700;
+        }
+
+        .content-block p {
+            color: var(--text-muted);
+            line-height: 1.7;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .insight-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--accent);
+            padding: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            margin-top: 2rem;
+        }
+
+        .insight-box h4 {
+            margin-bottom: 0.5rem;
+            color: white;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Visual Blocks / Glass Cards */
         .glass-card {
             background: var(--glass-bg);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border);
             border-radius: 24px;
-            padding: 2rem;
+            padding: 2.5rem;
             box-shadow: var(--glass-shadow);
+            width: 100%;
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 2rem;
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
         }
 
-        h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            letter-spacing: -0.02em;
+        /* KPI Grid in Hero */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-top: 4rem;
+            text-align: left;
         }
 
-        p.subtitle {
+        .kpi-card {
+            padding: 1.5rem;
+            border-radius: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+        }
+
+        .kpi-card h3 {
+            font-size: 0.75rem;
             color: var(--text-muted);
-            line-height: 1.5;
-            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
         }
 
+        .kpi-card p {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        /* Form Styles */
         .form-group {
             margin-bottom: 1.5rem;
+            text-align: left;
         }
 
         label {
@@ -131,20 +263,19 @@
 
         input {
             width: 100%;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--glass-border);
             border-radius: 12px;
-            padding: 0.8rem 1rem;
+            padding: 1rem;
             color: white;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            outline: none;
+            font-size: 1.1rem;
+            transition: all 0.3s;
         }
 
         input:focus {
             border-color: var(--accent);
-            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
-            background: rgba(0, 0, 0, 0.4);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.3);
         }
 
         button {
@@ -153,25 +284,23 @@
             color: white;
             border: none;
             border-radius: 12px;
-            padding: 1rem;
-            font-size: 1.05rem;
+            padding: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
+            margin-top: 1rem;
         }
 
         button:hover {
             background: var(--accent-hover);
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px -10px rgba(139, 92, 246, 0.5);
+            box-shadow: 0 10px 20px -10px rgba(109, 40, 217, 0.6);
         }
 
-        button:active {
-            transform: translateY(0);
-        }
-
+        /* Result Card */
         .result-card {
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             border-radius: 16px;
             padding: 1.5rem;
             opacity: 0;
@@ -179,6 +308,7 @@
             transition: all 0.5s ease;
             display: none;
             border: 1px solid transparent;
+            text-align: left;
         }
 
         .result-card.active {
@@ -198,7 +328,7 @@
         }
 
         .result-title {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
@@ -213,16 +343,16 @@
 
         .prob-bar-bg {
             width: 100%;
-            height: 6px;
+            height: 8px;
             background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
+            border-radius: 4px;
             margin-top: 1rem;
             overflow: hidden;
         }
 
         .prob-bar-fill {
             height: 100%;
-            border-radius: 3px;
+            border-radius: 4px;
             transition: width 1s ease;
             width: 0%;
         }
@@ -240,74 +370,40 @@
             text-align: center;
             margin-top: 1.5rem;
             color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        /* Dashboard Styles */
-        .dashboard-section {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-        }
-
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-        }
-
-        .kpi-card {
-            padding: 1.5rem;
-        }
-
-        .kpi-card h3 {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            margin-bottom: 0.5rem;
-        }
-
-        .kpi-card p {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: white;
-        }
-
-        .charts-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
-        }
-
-        .chart-card {
-            padding: 1.5rem;
-        }
-
-        .chart-card h3 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            font-weight: 600;
-            color: white;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 300px;
-            width: 100%;
         }
 
         @media (max-width: 1024px) {
-            .layout-wrapper {
+
+            .container,
+            .reverse .container {
                 grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+
+            .reverse .content-block {
+                grid-column: 1;
+                grid-row: auto;
+            }
+
+            .reverse .visual-block {
+                grid-column: 1;
+                grid-row: auto;
+            }
+
+            section {
+                padding-top: 100px;
+                height: auto;
+                min-height: auto;
+                padding-bottom: 4rem;
             }
 
             .kpi-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .charts-grid {
-                grid-template-columns: 1fr;
+            nav {
+                display: none;
+                /* Simplify for mobile mapping */
             }
         }
     </style>
@@ -316,87 +412,197 @@
 <body>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
 
-    <div class="layout-wrapper">
-        <!-- Predictor Side -->
-        <div class="glass-card predict-card" style="align-self: start;">
-            <div class="header">
-                <h1>Risk Forecaster</h1>
-                <p class="subtitle">Predict the likelihood of a YouTube video receiving negative reception (Dislike
-                    Ratio > 5%).</p>
-            </div>
-
-            <form id="predictionForm">
-                <div class="form-group">
-                    <label for="views">Estimated Views</label>
-                    <input type="number" id="views" required min="0" placeholder="e.g., 1000000" value="1000000">
-                </div>
-                <div class="form-group">
-                    <label for="comments">Estimated Comments</label>
-                    <input type="number" id="comments" required min="0" placeholder="e.g., 50000" value="50000">
-                </div>
-                <button type="submit" id="submitBtn">Analyze Risk Profile</button>
-            </form>
-
-            <div class="loading" id="loading">Analyzing video metrics...</div>
-
-            <div class="result-card" id="resultCard">
-                <div class="result-title" id="resultTitle"></div>
-                <p class="subtitle" id="resultDesc" style="margin-top: 0.5rem; color: #cbd5e1;"></p>
-                <div
-                    style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.85rem; color: #94a3b8;">
-                    <span>Probability of High Risk</span>
-                    <span id="probText">0%</span>
-                </div>
-                <div class="prob-bar-bg">
-                    <div class="prob-bar-fill" id="probBar"></div>
-                </div>
-            </div>
+    <nav>
+        <div class="nav-logo">YT Risk Analysis</div>
+        <div class="nav-links">
+            <a href="#overview">Overview</a>
+            <a href="#predictor">AI Predictor</a>
+            <a href="#distribution">Distribution</a>
+            <a href="#correlation">Correlation</a>
+            <a href="#segmentation">Segmentation</a>
         </div>
+    </nav>
 
-        <!-- Dashboard Side -->
-        <div class="dashboard-section">
+    <!-- SECTION: HERO / OVERVIEW -->
+    <section id="overview">
+        <div class="container hero-container">
+            <h1
+                style="font-size: 4rem; font-weight: 800; margin-bottom: 1.5rem; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; color: transparent; line-height: 1.1;">
+                Predicting Audience Reception
+            </h1>
+            <p style="font-size: 1.4rem; color: var(--text-muted); max-width: 700px; margin: 0 auto; line-height: 1.6;">
+                A machine learning framework to analyze YouTube metrics, segment audience demand, and preemptively flag
+                videos at high risk for negative reception.
+            </p>
+
             <div class="kpi-grid">
-                <div class="glass-card kpi-card">
-                    <h3>Total Videos</h3>
+                <div class="kpi-card">
+                    <h3>Dataset Scale</h3>
                     <p id="kpi-videos">...</p>
                 </div>
-                <div class="glass-card kpi-card">
+                <div class="kpi-card">
                     <h3>Avg Views</h3>
                     <p id="kpi-views">...</p>
                 </div>
-                <div class="glass-card kpi-card">
+                <div class="kpi-card">
                     <h3>Avg Likes</h3>
                     <p id="kpi-likes">...</p>
                 </div>
-                <div class="glass-card kpi-card">
+                <div class="kpi-card">
                     <h3>Avg Dislike Ratio</h3>
                     <p id="kpi-ratio">...</p>
                 </div>
             </div>
+        </div>
+    </section>
 
-            <div class="charts-grid">
-                <div class="glass-card chart-card">
-                    <h3>Dislike Ratio Distribution</h3>
+    <!-- SECTION: PREDICTOR -->
+    <section id="predictor">
+        <div class="container">
+            <div class="content-block">
+                <h2>The AI Risk Predictor</h2>
+                <p>
+                    Can we predict negative backlash before an ad campaign goes live? This tool utilizes a
+                    <strong>Logistic Regression</strong> model trained on historical YouTube data.
+                </p>
+                <p>
+                    By inputting estimated early-stage volume metrics (views and comments), the model calculates the
+                    probability of the video crossing a critical <strong>5% Dislike Ratio</strong> threshold.
+                </p>
+                <div class="insight-box">
+                    <h4>Business Application</h4>
+                    <p style="margin:0; font-size:1rem;">If a video is flagged as "High Risk", platforms or advertisers
+                        can preemptively pull programmatic ad spend to protect brand safety, or creators can disable
+                        comments/ratings to mitigate algorithmic suppression.</p>
+                </div>
+            </div>
+            <div class="visual-block">
+                <div class="glass-card">
+                    <form id="predictionForm">
+                        <div class="form-group">
+                            <label for="views">Estimated Views (Volume)</label>
+                            <input type="number" id="views" required min="0" placeholder="e.g., 1000000"
+                                value="1000000">
+                        </div>
+                        <div class="form-group">
+                            <label for="comments">Estimated Comments (Engagement)</label>
+                            <input type="number" id="comments" required min="0" placeholder="e.g., 50000" value="50000">
+                        </div>
+                        <button type="submit" id="submitBtn">Analyze Risk Profile</button>
+                    </form>
+                    <div class="loading" id="loading">Running inference model...</div>
+                    <div class="result-card" id="resultCard">
+                        <div class="result-title" id="resultTitle"></div>
+                        <p id="resultDesc" style="color: #cbd5e1; font-size: 0.95rem; margin-top: 0.5rem;"></p>
+                        <div
+                            style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">
+                            <span>Probability of High Risk</span>
+                            <span id="probText">0%</span>
+                        </div>
+                        <div class="prob-bar-bg">
+                            <div class="prob-bar-fill" id="probBar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: DISTRIBUTION -->
+    <section id="distribution" class="reverse">
+        <div class="container">
+            <div class="content-block">
+                <h2>Defining the Baseline:<br>Dislike Ratio Distribution</h2>
+                <p>
+                    Before building predictive models, we must understand standard audience behavior. This histogram
+                    plots the frequency of Dislike Ratios across 37,000+ videos.
+                </p>
+                <p>
+                    Notice the severe right-skew: the vast majority of videos maintain a highly positive reception (a
+                    ratio close to 0%).
+                </p>
+                <div class="insight-box">
+                    <h4>Why the 5% Threshold?</h4>
+                    <p style="margin:0; font-size:1rem;">Because organic backlash is exceptionally rare, any video with
+                        a dislike ratio exceeding 5% lands in the extreme <strong>"long tail"</strong> of the
+                        distribution. This statistical anomaly indicates organized reviewing bombing, controversial
+                        subject matter, or clickbait, making it an ideal threshold for our target variable.</p>
+                </div>
+            </div>
+            <div class="visual-block">
+                <div class="glass-card">
                     <div class="chart-container">
                         <canvas id="distChart"></canvas>
                     </div>
                 </div>
-                <div class="glass-card chart-card">
-                    <h3>Demand Segmentation (K-Means)</h3>
-                    <div class="chart-container">
-                        <canvas id="clusterChart"></canvas>
-                    </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: CORRELATION -->
+    <section id="correlation">
+        <div class="container">
+            <div class="content-block">
+                <h2>What Drives Backlash?<br>Correlation Analysis</h2>
+                <p>
+                    This chart maps the <strong>Pearson Correlation Coefficient</strong> of various engagement metrics
+                    against our target variable: the Dislike Ratio.
+                </p>
+                <p>
+                    We observe that raw interactions (Total Views, Likes) have surprisingly little correlation with the
+                    *ratio* of dislikes. A highly viewed video is not necessarily a highly disliked one.
+                </p>
+                <div class="insight-box">
+                    <h4>The Comment Phenomenon</h4>
+                    <p style="margin:0; font-size:1rem;">Notice the strongest positive correlation exists between
+                        <strong>Comments and Dislike Ratio</strong>. Highly polarizing or negative content drives
+                        debate, inflating the comment section at a rate disproportional to likes. This justifies our
+                        model's heavy reliance on early comment volume.</p>
                 </div>
-                <div class="glass-card chart-card" style="grid-column: 1 / -1;">
-                    <h3>Feature Correlations (vs Dislike Ratio)</h3>
-                    <div class="chart-container" style="height: 250px;">
+            </div>
+            <div class="visual-block">
+                <div class="glass-card">
+                    <div class="chart-container">
                         <canvas id="corrChart"></canvas>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
+
+    <!-- SECTION: SEGMENTATION -->
+    <section id="segmentation" class="reverse">
+        <div class="container">
+            <div class="content-block">
+                <h2>Categorizing Demand:<br>K-Means Clustering</h2>
+                <p>
+                    Beyond risk prediction, how can we categorize content "success"? We applied unsupervised
+                    <strong>K-Means Clustering (k=3)</strong> to plot videos logarithmically by Views vs. Likes.
+                </p>
+                <ul
+                    style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.7; padding-left: 1.5rem; margin-bottom: 1.5rem;">
+                    <li><strong>Cluster 0 (Red):</strong> Average / Baseline Performers</li>
+                    <li><strong>Cluster 1 (Green):</strong> High Demand / Viral Hits</li>
+                    <li><strong>Cluster 2 (Blue):</strong> Low Engagement / Niche</li>
+                </ul>
+                <div class="insight-box">
+                    <h4>Strategic Value</h4>
+                    <p style="margin:0; font-size:1rem;">By segmenting the inventory automatically, platforms can
+                        dynamically establish pricing tiers for Ad-Sense. Advertisers can bid premiums for placement
+                        exclusively on "Cluster 1" viral hits to guarantee maximum ROI.</p>
+                </div>
+            </div>
+            <div class="visual-block">
+                <div class="glass-card">
+                    <div class="chart-container">
+                        <canvas id="clusterChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <script>
         // Use localhost if running locally, otherwise Render URL
@@ -407,8 +613,8 @@
         const PREDICT_URL = `${BASE_URL}/predict`;
         const DASHBOARD_URL = `${BASE_URL}/api/dashboard-data`;
 
-        // Configure Chart.js defaults for dark theme
-        Chart.defaults.color = '#94a3b8';
+        // Configure Chart.js defaults
+        Chart.defaults.color = '#cbd5e1';
         Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
         Chart.defaults.font.family = "'Inter', sans-serif";
 
@@ -433,9 +639,29 @@
                     body: JSON.stringify({ view_count: parseFloat(views), comment_count: parseFloat(comments) })
                 });
 
-                if (!response.ok) throw new Error("Failed to connect to the prediction server.");
+                if (!response.ok) throw new Error("Connection failed. Check if Backend is running.");
                 const data = await response.json();
-                displayResult(data.prediction, data.probability);
+
+                const title = document.getElementById('resultTitle');
+                const desc = document.getElementById('resultDesc');
+                const probText = document.getElementById('probText');
+                const probBar = document.getElementById('probBar');
+                const probPercent = (data.probability * 100).toFixed(1) + '%';
+
+                if (data.prediction === 'High Risk') {
+                    resultCard.classList.add('high-risk');
+                    title.innerHTML = '⚠️ HIGH RISK DETECTED';
+                    desc.textContent = 'Action Required: High probability of backlash. Recommend ad-freeze or content review.';
+                } else {
+                    resultCard.classList.add('low-risk');
+                    title.innerHTML = '✅ SAFE PROFILE';
+                    desc.textContent = 'Standard risk profile. Safe for programmatic campaigns.';
+                }
+
+                probText.textContent = probPercent;
+                resultCard.classList.add('active');
+                setTimeout(() => { probBar.style.width = probPercent; }, 100);
+
             } catch (error) {
                 alert(error.message);
             } finally {
@@ -445,29 +671,6 @@
             }
         });
 
-        function displayResult(prediction, probability) {
-            const resultCard = document.getElementById('resultCard');
-            const title = document.getElementById('resultTitle');
-            const desc = document.getElementById('resultDesc');
-            const probText = document.getElementById('probText');
-            const probBar = document.getElementById('probBar');
-            const probPercent = (probability * 100).toFixed(1) + '%';
-
-            if (prediction === 'High Risk') {
-                resultCard.classList.add('high-risk');
-                title.innerHTML = '⚠️ HIGH RISK DETECTED';
-                desc.textContent = 'The model predicts this video is likely to have a dislike ratio > 5%. Platforms can preemptively adjust ad-bidding strategies or flag it for review to protect brand safety.';
-            } else {
-                resultCard.classList.add('low-risk');
-                title.innerHTML = '✅ LOW RISK DETECTED';
-                desc.textContent = 'The model predicts this video will have a normal/low dislike ratio. Safe for standard monetization streams.';
-            }
-
-            probText.textContent = probPercent;
-            resultCard.classList.add('active');
-            setTimeout(() => { probBar.style.width = probPercent; }, 100);
-        }
-
         // --- DASHBOARD LOGIC ---
         async function loadDashboard() {
             try {
@@ -476,16 +679,14 @@
                 const data = await res.json();
 
                 // Update KPIs
-                document.getElementById('kpi-videos').textContent = data.summary.total_videos.toLocaleString();
+                document.getElementById('kpi-videos').textContent = (data.summary.total_videos / 1000).toFixed(1) + 'K';
                 document.getElementById('kpi-views').textContent = formatNumber(data.summary.avg_views);
                 document.getElementById('kpi-likes').textContent = formatNumber(data.summary.avg_likes);
                 document.getElementById('kpi-ratio').textContent = (data.summary.avg_dislike_ratio * 100).toFixed(2) + '%';
 
-                // Render Charts
                 renderDistChart(data.dislike_ratio_dist);
                 renderClusterChart(data.clusters);
                 renderCorrChart(data.correlation);
-
             } catch (err) {
                 console.error("Dashboard data load error:", err);
             }
@@ -506,45 +707,17 @@
                     datasets: [{
                         label: 'Video Count',
                         data: data.counts,
-                        backgroundColor: 'rgba(139, 92, 246, 0.6)',
-                        borderColor: 'rgba(139, 92, 246, 1)',
-                        borderWidth: 1,
+                        backgroundColor: 'rgba(109, 40, 217, 0.7)',
+                        hoverBackgroundColor: 'rgba(109, 40, 217, 1)',
                         borderRadius: 4
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true },
-                        x: { display: true, ticks: { maxTicksLimit: 10 } }
-                    }
-                }
-            });
-        }
-
-        function renderClusterChart(data) {
-            const ctx = document.getElementById('clusterChart').getContext('2d');
-            const colors = ['rgba(239, 68, 68, 0.6)', 'rgba(16, 185, 129, 0.6)', 'rgba(59, 130, 246, 0.6)'];
-
-            const datasets = [0, 1, 2].map(c => ({
-                label: `Cluster ${c}`,
-                data: data.points.filter(p => p.cluster === c),
-                backgroundColor: colors[c],
-                pointRadius: 4,
-                pointHoverRadius: 6
-            }));
-
-            new Chart(ctx, {
-                type: 'scatter',
-                data: { datasets },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        x: { type: 'logarithmic', title: { display: true, text: 'Views' } },
-                        y: { type: 'logarithmic', title: { display: true, text: 'Likes' } }
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        x: { display: true, ticks: { maxTicksLimit: 8 }, grid: { display: false } }
                     }
                 }
             });
@@ -561,9 +734,11 @@
 
             data.variables.forEach((v, i) => {
                 if (v !== 'dislike_ratio') {
-                    labels.push(v);
+                    // Prettify labels
+                    let niceLabel = v.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    labels.push(niceLabel);
                     values.push(targetCorrs[i]);
-                    bgColors.push(targetCorrs[i] > 0 ? 'rgba(239, 68, 68, 0.6)' : 'rgba(16, 185, 129, 0.6)');
+                    bgColors.push(targetCorrs[i] > 0 ? 'rgba(239, 68, 68, 0.7)' : 'rgba(16, 185, 129, 0.7)');
                 }
             });
 
@@ -572,20 +747,46 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Correlation',
+                        label: 'Correlation vs Dislike Ratio',
                         data: values,
                         backgroundColor: bgColors,
                         borderRadius: 4
                     }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
                     plugins: { legend: { display: false } },
                     scales: {
-                        x: { min: -1, max: 1 },
-                        y: {}
+                        x: { min: -1, max: 1, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderClusterChart(data) {
+            const ctx = document.getElementById('clusterChart').getContext('2d');
+            const colors = ['rgba(239, 68, 68, 0.7)', 'rgba(16, 185, 129, 0.7)', 'rgba(59, 130, 246, 0.7)'];
+
+            const datasets = [0, 1, 2].map(c => ({
+                label: `Cluster ${c}`,
+                data: data.points.filter(p => p.cluster === c),
+                backgroundColor: colors[c],
+                pointRadius: 5,
+                pointHoverRadius: 8
+            }));
+
+            new Chart(ctx, {
+                type: 'scatter',
+                data: { datasets },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { color: '#f8fafc' } }
+                    },
+                    scales: {
+                        x: { type: 'logarithmic', title: { display: true, text: 'Views (Log Scale)', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { type: 'logarithmic', title: { display: true, text: 'Likes (Log Scale)', color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
                     }
                 }
             });
