@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -45,12 +46,33 @@
             z-index: 0;
             animation: float 20s infinite ease-in-out alternate;
         }
-        .orb-1 { width: 400px; height: 400px; background: rgba(139, 92, 246, 0.3); top: -100px; left: -100px; animation-delay: 0s; }
-        .orb-2 { width: 300px; height: 300px; background: rgba(239, 68, 68, 0.2); bottom: -50px; right: 10%; animation-delay: -5s; }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(139, 92, 246, 0.3);
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 300px;
+            height: 300px;
+            background: rgba(239, 68, 68, 0.2);
+            bottom: -50px;
+            right: 10%;
+            animation-delay: -5s;
+        }
 
         @keyframes float {
-            0% { transform: translateY(0) scale(1); }
-            100% { transform: translateY(50px) scale(1.1); }
+            0% {
+                transform: translateY(0) scale(1);
+            }
+
+            100% {
+                transform: translateY(50px) scale(1.1);
+            }
         }
 
         .container {
@@ -182,8 +204,13 @@
             gap: 0.5rem;
         }
 
-        .high-risk .result-title { color: var(--danger); }
-        .low-risk .result-title { color: var(--success); }
+        .high-risk .result-title {
+            color: var(--danger);
+        }
+
+        .low-risk .result-title {
+            color: var(--success);
+        }
 
         .prob-bar-bg {
             width: 100%;
@@ -201,8 +228,13 @@
             width: 0%;
         }
 
-        .high-risk .prob-bar-fill { background: var(--danger); }
-        .low-risk .prob-bar-fill { background: var(--success); }
+        .high-risk .prob-bar-fill {
+            background: var(--danger);
+        }
+
+        .low-risk .prob-bar-fill {
+            background: var(--success);
+        }
 
         .loading {
             display: none;
@@ -212,11 +244,17 @@
         }
 
         @media (max-width: 640px) {
-            .container { padding: 2rem; }
-            h1 { font-size: 2rem; }
+            .container {
+                padding: 2rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
+
 <body>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
@@ -224,7 +262,8 @@
     <div class="container">
         <div class="header">
             <h1>Risk Forecaster</h1>
-            <p class="subtitle">Predict the likelihood of a YouTube video receiving negative reception (Dislike Ratio > 5%) before it escalates.</p>
+            <p class="subtitle">Predict the likelihood of a YouTube video receiving negative reception (Dislike Ratio >
+                5%) before it escalates.</p>
         </div>
 
         <form id="predictionForm">
@@ -252,7 +291,8 @@
             <p class="subtitle" id="resultDesc" style="margin-top: 0.5rem; color: #cbd5e1;">
                 <!-- Injected via JS -->
             </p>
-            <div style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.9rem; color: #94a3b8;">
+            <div
+                style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.9rem; color: #94a3b8;">
                 <span>Probability of High Risk</span>
                 <span id="probText">0%</span>
             </div>
@@ -266,24 +306,24 @@
         // --- CONFIGURATION ---
         // IMPORTANT: Change this URL to your live Render backend URL after deploying!
         // Example: const API_URL = "https://youtube-risk-api.onrender.com/predict";
-        const API_URL = "http://localhost:8000/predict"; 
+        const API_URL = "https://youtube-dislikes-dataset.onrender.com/predict";
 
         document.getElementById('predictionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const views = document.getElementById('views').value;
             const comments = document.getElementById('comments').value;
-            
+
             const btn = document.getElementById('submitBtn');
             const loading = document.getElementById('loading');
             const resultCard = document.getElementById('resultCard');
-            
+
             // UI Update
             btn.disabled = true;
             btn.style.opacity = '0.7';
             loading.style.display = 'block';
             resultCard.classList.remove('active', 'high-risk', 'low-risk');
-            
+
             try {
                 const response = await fetch(API_URL, {
                     method: 'POST',
@@ -300,7 +340,7 @@
 
                 const data = await response.json();
                 displayResult(data.prediction, data.probability);
-                
+
             } catch (error) {
                 alert(error.message);
             } finally {
@@ -316,9 +356,9 @@
             const desc = document.getElementById('resultDesc');
             const probText = document.getElementById('probText');
             const probBar = document.getElementById('probBar');
-            
+
             const probPercent = (probability * 100).toFixed(1) + '%';
-            
+
             if (prediction === 'High Risk') {
                 resultCard.classList.add('high-risk');
                 title.innerHTML = '⚠️ HIGH RISK DETECTED';
@@ -328,12 +368,12 @@
                 title.innerHTML = '✅ LOW RISK DETECTED';
                 desc.textContent = 'The model predicts this video will have a normal/low dislike ratio. Safe for standard monetization streams.';
             }
-            
+
             probText.textContent = probPercent;
-            
+
             // Trigger animation
             resultCard.classList.add('active');
-            
+
             // Small delay for the bar animation to hit after fade in
             setTimeout(() => {
                 probBar.style.width = probPercent;
@@ -341,4 +381,5 @@
         }
     </script>
 </body>
+
 </html>
