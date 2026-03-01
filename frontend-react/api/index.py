@@ -14,7 +14,7 @@ scaler_path = os.path.join(base_dir, 'artifacts', 'scaler.pkl')
 try:
     model = joblib.load(model_path)
     scaler = joblib.load(scaler_path)
-    feature_names = ['view_count', 'likes', 'comments', 'engagement_rate', 'like_to_view_ratio', 'comment_to_view_ratio', 'published_month', 'tags_count']
+    feature_names = ['view_count', 'likes', 'comment_count', 'engagement_rate', 'like_to_view_ratio', 'comment_to_view_ratio', 'published_month', 'tags_count']
 except Exception as e:
     model = None
     scaler = None
@@ -28,32 +28,20 @@ def predict():
 
     try:
         data = request.json
-        views = data.get('views', 0)
-        likes = data.get('likes', 0)
-        comments = data.get('comments', 0)
-        
-        # Feature Engineering equivalent to training
-        engagement_rate = (likes + comments) / max(views, 1)
-        like_to_view_ratio = likes / max(views, 1)
-        comment_to_view_ratio = comments / max(views, 1)
+        views = float(data.get('views', 0))
+        comments = float(data.get('comments', 0))
         
         input_data = {
             'view_count': views,
-            'likes': likes,
-            'comments': comments,
-            'engagement_rate': engagement_rate,
-            'like_to_view_ratio': like_to_view_ratio,
-            'comment_to_view_ratio': comment_to_view_ratio,
-            'published_month': 6, # Default
-            'tags_count': 10 # Default
+            'comment_count': comments,
         }
         
-        df = pd.DataFrame([input_data])
-        # Reorder to match scaler correctly
-        df = df[feature_names]
+        # Create DataFrame with exact column order expected by the scaler
+        df = pd.DataFrame([input_data])[['view_count', 'comment_count']]
         
+        # Scale the data and predict
         scaled_input = scaler.transform(df)
-        probability = model.predict_proba(scaled_input)[0][1]
+        probability = model.predict_proba(scaled_input)[0][1] # Index 1 is the 'High Risk' class
         prediction = int(probability > 0.5)
 
         return jsonify({
@@ -62,6 +50,7 @@ def predict():
             'risk_level': 'High' if probability > 0.6 else 'Low' if probability < 0.3 else 'Moderate'
         })
     except Exception as e:
+        print(f"Prediction Error: {e}")
         return jsonify({'error': str(e)}), 400
 
 # Provide a root response for vercel health checks
