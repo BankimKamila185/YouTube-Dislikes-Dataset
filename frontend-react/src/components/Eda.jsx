@@ -36,29 +36,16 @@ export default function Eda({ data }) {
         comment_count: c.avg_comments
     }));
 
-    // Data prep for Heatmap (ScatterChart)
+    // Data prep for Heatmap (CSS Grid approach)
     const correlationMatrix = data.correlation.matrix;
     const correlationVariables = data.correlation.variables;
-    const heatmapData = [];
 
-    correlationMatrix.forEach((row, rowIndex) => {
-        row.forEach((value, colIndex) => {
-            heatmapData.push({
-                x: rowIndex,
-                y: colIndex,
-                z: value,
-                xLabel: correlationVariables[rowIndex],
-                yLabel: correlationVariables[colIndex]
-            });
-        });
-    });
-
-    // Helper for Heatmap Color
-    const getColor = (value) => {
+    // Helper for Heatmap Color (CSS Grid)
+    const getHeatmapColor = (value) => {
         // Simple Coolwarm (Blue to Red) interpolator for -1 to 1
         return value > 0
-            ? `rgba(248, 81, 73, ${value})` // Red for positive
-            : `rgba(88, 166, 255, ${Math.abs(value)})`; // Blue for negative
+            ? `rgba(248, 81, 73, ${value * 0.8 + 0.2})` // Red for positive, min opacity 0.2
+            : `rgba(88, 166, 255, ${Math.abs(value) * 0.8 + 0.2})`; // Blue for negative
     };
 
     const code1 = `top_channels = df.groupby('channel_title')['view_count'].sum().nlargest(10)
@@ -142,43 +129,55 @@ kmeans = KMeans(n_clusters = 3, random_state = 42)
                     </div>
                 )}
 
-                <div className="chart-container" style={{ height: 400 }}>
-                    <ResponsiveContainer width="100%" height="100%">
-                        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 40 }}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
-                            <XAxis
-                                type="number"
-                                dataKey="x"
-                                stroke="var(--text-secondary)"
-                                domain={[0, correlationVariables.length - 1]}
-                                tickFormatter={(tick) => correlationVariables[tick]}
-                                interval={0}
-                            />
-                            <YAxis
-                                type="number"
-                                dataKey="y"
-                                stroke="var(--text-secondary)"
-                                domain={[0, correlationVariables.length - 1]}
-                                tickFormatter={(tick) => correlationVariables[tick]}
-                                interval={0}
-                            />
-                            <ZAxis type="number" dataKey="z" range={[500, 500]} />
-                            <Tooltip
-                                cursor={{ strokeDasharray: '3 3' }}
-                                contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
-                                formatter={(value, name, props) => {
-                                    if (name === 'z') return [value.toFixed(2), 'Correlation'];
-                                    return [];
-                                }}
-                                labelFormatter={() => ''}
-                            />
-                            <Scatter data={heatmapData} shape="square">
-                                {heatmapData.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={getColor(entry.z)} />
+                <div className="chart-container" style={{ padding: '2rem', overflowX: 'auto' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: `auto repeat(${correlationVariables.length}, 1fr)`, gap: '4px', minWidth: '600px' }}>
+                        {/* Header Row */}
+                        <div style={{ visibility: 'hidden' }}></div>
+                        {correlationVariables.map((variable, i) => (
+                            <div key={`header-${i}`} style={{ textAlign: 'center', color: 'var(--text-secondary)', fontWeight: 'bold', paddingBottom: '0.5rem' }}>
+                                {variable}
+                            </div>
+                        ))}
+
+                        {/* Matrix Rows */}
+                        {correlationMatrix.map((row, rowIndex) => (
+                            <React.Fragment key={`row-${rowIndex}`}>
+                                {/* Row Label */}
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: '1rem', color: 'var(--text-secondary)', fontWeight: 'bold' }}>
+                                    {correlationVariables[rowIndex]}
+                                </div>
+                                {/* Row Data Cells */}
+                                {row.map((val, colIndex) => (
+                                    <div
+                                        key={`cell-${rowIndex}-${colIndex}`}
+                                        style={{
+                                            backgroundColor: getHeatmapColor(val),
+                                            padding: '1.5rem 1rem',
+                                            textAlign: 'center',
+                                            borderRadius: '6px',
+                                            color: Math.abs(val) > 0.5 ? 'white' : 'var(--text-primary)',
+                                            fontWeight: 'bold',
+                                            transition: 'transform 0.2s, box-shadow 0.2s',
+                                            cursor: 'pointer'
+                                        }}
+                                        title={`Correlation Matrix: \n${correlationVariables[rowIndex]} x ${correlationVariables[colIndex]}\nValue: ${val.toFixed(2)}`}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1.05)';
+                                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
+                                            e.currentTarget.style.zIndex = 10;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.transform = 'scale(1)';
+                                            e.currentTarget.style.boxShadow = 'none';
+                                            e.currentTarget.style.zIndex = 1;
+                                        }}
+                                    >
+                                        {val.toFixed(2)}
+                                    </div>
                                 ))}
-                            </Scatter>
-                        </ScatterChart>
-                    </ResponsiveContainer>
+                            </React.Fragment>
+                        ))}
+                    </div>
                 </div>
             </div>
 
