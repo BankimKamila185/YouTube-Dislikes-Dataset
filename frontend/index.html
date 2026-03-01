@@ -6,19 +6,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>YouTube Risk Forecaster & Analysis</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #020617 0%, #0f172a 100%);
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(0, 0, 0, 0.05);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
             --accent: #6d28d9;
             --accent-hover: #5b21b6;
             --danger: #ef4444;
             --success: #10b981;
-            --nav-bg: rgba(15, 23, 42, 0.8);
+            --nav-bg: rgba(255, 255, 255, 0.8);
         }
 
         * {
@@ -102,9 +103,9 @@
         .nav-logo {
             font-weight: 700;
             font-size: 1.2rem;
-            background: linear-gradient(to right, #fff, #a5b4fc);
-            background-clip: text;
+            background: linear-gradient(to right, #4c1d95, #6d28d9);
             -webkit-background-clip: text;
+            background-clip: text;
             color: transparent;
         }
 
@@ -192,7 +193,7 @@
 
         .insight-box h4 {
             margin-bottom: 0.5rem;
-            color: white;
+            color: var(--text-main);
             font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -222,9 +223,9 @@
         }
 
         .data-table th {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.03);
             font-weight: 600;
-            color: #e2e8f0;
+            color: var(--text-main);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             font-size: 0.8rem;
@@ -285,7 +286,7 @@
         .kpi-card p {
             font-size: 1.8rem;
             font-weight: 700;
-            color: white;
+            color: var(--text-main);
         }
 
         /* Form Styles */
@@ -298,7 +299,7 @@
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
-            color: #cbd5e1;
+            color: var(--text-muted);
             font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -306,11 +307,11 @@
 
         input {
             width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid #cbd5e1;
             border-radius: 12px;
             padding: 1rem;
-            color: white;
+            color: var(--text-main);
             font-size: 1.1rem;
             transition: all 0.3s;
         }
@@ -361,13 +362,13 @@
         }
 
         .result-card.high-risk {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: rgba(239, 68, 68, 0.3);
+            background: rgba(239, 68, 68, 0.05);
+            border-color: rgba(239, 68, 68, 0.2);
         }
 
         .result-card.low-risk {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.05);
+            border-color: rgba(16, 185, 129, 0.2);
         }
 
         .result-title {
@@ -462,6 +463,7 @@
         <div class="nav-links">
             <a href="#overview">Overview</a>
             <a href="#dataset">Dataset</a>
+            <a href="#eda">EDA Code</a>
             <a href="#predictor">AI Predictor</a>
             <a href="#distribution">Distribution</a>
             <a href="#correlation">Correlation</a>
@@ -473,7 +475,7 @@
     <section id="overview">
         <div class="container hero-container">
             <h1
-                style="font-size: 4rem; font-weight: 800; margin-bottom: 1.5rem; background: linear-gradient(to right, #fff, #a5b4fc); -webkit-background-clip: text; color: transparent; line-height: 1.1;">
+                style="font-size: 4rem; font-weight: 800; margin-bottom: 1.5rem; background: linear-gradient(to right, #4c1d95, #6d28d9); -webkit-background-clip: text; background-clip: text; color: transparent; line-height: 1.1;">
                 Predicting Audience Reception
             </h1>
             <p style="font-size: 1.4rem; color: var(--text-muted); max-width: 700px; margin: 0 auto; line-height: 1.6;">
@@ -572,16 +574,76 @@
                     <div class="loading" id="loading">Running inference model...</div>
                     <div class="result-card" id="resultCard">
                         <div class="result-title" id="resultTitle"></div>
-                        <p id="resultDesc" style="color: #cbd5e1; font-size: 0.95rem; margin-top: 0.5rem;"></p>
+                        <p id="resultDesc" style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.5rem;">
+                        </p>
                         <div
-                            style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.9rem; color: #94a3b8; font-weight: 500;">
+                            style="display: flex; justify-content: space-between; margin-top: 1.5rem; font-size: 0.9rem; color: #64748b; font-weight: 500;">
                             <span>Probability of High Risk</span>
                             <span id="probText">0%</span>
                         </div>
-                        <div class="prob-bar-bg">
+                        <div class="prob-bar-bg" style="background: rgba(0,0,0,0.05);">
                             <div class="prob-bar-fill" id="probBar"></div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION: EDA CODE & EXPLANATION -->
+    <section id="eda">
+        <div class="container">
+            <div class="content-block">
+                <h2>Exploratory Data Analysis (EDA)<br>With Python</h2>
+                <p>
+                    Here is the exact Python code we ran to conduct our <strong>Exploratory Data Analysis
+                        (EDA)</strong>. This foundational step helps us uncover underlying patterns in the dataset
+                    before training any machine learning models.
+                </p>
+                <div class="insight-box">
+                    <h4>What is this?</h4>
+                    <p style="margin:0; font-size:1rem; line-height: 1.6;">
+                        This specific code calculates the average view count for each YouTube channel and plots the "Top
+                        10 Channels" using the Seaborn library. This visualization highlights <strong>Demand
+                            Concentration</strong>, demonstrating that a small number of channels capture a
+                        disproportionately massive share of the audience.
+                    </p>
+                </div>
+            </div>
+            <div class="visual-block">
+                <div class="glass-card" style="padding: 1.5rem; overflow-x: auto;">
+                    <div
+                        style="display: flex; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                        <span
+                            style="font-family: monospace; color: #4c1d95; font-weight: 600;">youtube_analysis.py</span>
+                        <span
+                            style="color: #059669; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Python
+                            Snippet</span>
+                    </div>
+                    <pre style="margin: 0; background: transparent; padding: 0;"><code class="language-python" style="color: var(--text-main);">import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+print("\\n--- Exploratory Data Analysis (EDA) ---")
+sns.set_theme(style="whitegrid")
+
+# Get Top 10 Channels by Average Views
+top_channels = df.groupby('channel_title')['view_count'] \\
+                 .mean().sort_values(ascending=False).head(10)
+top_channels_df = top_channels.reset_index()
+
+# Plot Bar Graph
+plt.figure(figsize=(12, 6))
+sns.barplot(
+    data=top_channels_df, 
+    x='view_count', 
+    y='channel_title', 
+    palette='magma'
+)
+plt.title('Top 10 Channels by Average View Count')
+plt.xlabel('Average View Count')
+plt.ylabel('Channel Name')
+plt.show()</code></pre>
                 </div>
             </div>
         </div>
@@ -692,9 +754,25 @@
         const DASHBOARD_URL = `${BASE_URL}/api/dashboard-data`;
 
         // Configure Chart.js defaults
-        Chart.defaults.color = '#cbd5e1';
-        Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.05)';
+        Chart.defaults.color = '#64748b'; // text-muted
+        Chart.defaults.borderColor = 'rgba(0, 0, 0, 0.05)';
         Chart.defaults.font.family = "'Inter', sans-serif";
+
+        // Global Chart.js animation config
+        Chart.defaults.animation = {
+            duration: 1500,
+            easing: 'easeOutQuart',
+            delay: (context) => {
+                let delay = 0;
+                if (context.type === 'data' && context.mode === 'default' && !context.chart.alreadyAnimated) {
+                    delay = context.dataIndex * 100 + context.datasetIndex * 50;
+                }
+                return delay;
+            },
+            onComplete: (context) => {
+                context.chart.alreadyAnimated = true;
+            }
+        };
 
         // --- PREDICTOR LOGIC ---
         document.getElementById('predictionForm').addEventListener('submit', async (e) => {
@@ -893,6 +971,8 @@
         // Init
         loadDashboard();
     </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
 </body>
 
 </html>
