@@ -110,6 +110,14 @@ kmeans = KMeans(n_clusters = 3, random_state = 42)
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
+
+                <div className="explanation-block" style={{ marginTop: '1.5rem', padding: '1.5rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', borderLeft: '4px solid var(--accent-red)' }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--text-primary)', fontSize: '1.1rem' }}>📈 What does this chart tell us?</h3>
+                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '0.95rem', margin: 0 }}>
+                        This chart visualizes the absolute titans of our dataset. It aggregates the total view count across all videos published by each channel in the dataset and displays the top 10 highest-performing creators.<br /><br />
+                        <strong>Key Takeaway:</strong> We often see major corporate entertainment channels (like T-Series, Cocomelon, or SET India) or massive individual creators (like MrBeast) dominating this list. The disparity between the #1 spot and the #10 spot is usually massive, highlighting a "winners take all" power-law distribution in YouTube viewership.
+                    </p>
+                </div>
             </div>
 
             {/* Section 2 */}
@@ -217,6 +225,14 @@ kmeans = KMeans(n_clusters = 3, random_state = 42)
                         </LineChart>
                     </ResponsiveContainer>
                 </div>
+
+                <div className="explanation-block" style={{ marginTop: '1.5rem', padding: '1.5rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', borderLeft: '4px solid var(--accent-red)' }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--text-primary)', fontSize: '1.1rem' }}>📈 What does this trend indicate?</h3>
+                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '0.95rem', margin: 0 }}>
+                        This line chart tracks aggregate viewership based on the month a video was published. <br /><br />
+                        <strong>Key Takeaway:</strong> You will typically notice distinct peaks (seasonality). For example, viewership often spikes in late summer or during the holiday season (November/December) when younger demographics are out of school and spend more time on the platform. Dips usually correlate with back-to-school months. This seasonality is crucial for creators planning their upload schedules for maximum reach.
+                    </p>
+                </div>
             </div>
 
             {/* Section 4 */}
@@ -245,6 +261,14 @@ kmeans = KMeans(n_clusters = 3, random_state = 42)
                             <Bar dataKey="count" fill="var(--accent-red)" />
                         </BarChart>
                     </ResponsiveContainer>
+                </div>
+
+                <div className="explanation-block" style={{ marginTop: '1.5rem', padding: '1.5rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', borderLeft: '4px solid var(--accent-red)' }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--text-primary)', fontSize: '1.1rem' }}>📈 Why is Dislike Ratio important?</h3>
+                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '0.95rem', margin: 0 }}>
+                        The "Dislike Ratio" is calculated as <code>Dislikes / (Likes + Dislikes)</code>. It acts as a primary <strong>Risk Indicator</strong> for content. <br /><br />
+                        <strong>Key Takeaway:</strong> The distribution is heavily right-skewed. The vast majority of videos sit firmly on the left side (0.00 - 0.05), meaning they have overwhelmingly positive reception (less than 5% dislikes). A long tail stretches out to the right, showing isolated "controversial" or "clickbait" videos that angered viewers. This confirms that YouTube viewers primarily use the "Like" button to curate their feed, and rarely use "Dislike" unless they feel actively deceived.
+                    </p>
                 </div>
             </div>
 
@@ -278,6 +302,17 @@ kmeans = KMeans(n_clusters = 3, random_state = 42)
                             <Bar dataKey="comment_count" name="comment_count" fill="#93a0c1" />
                         </BarChart>
                     </ResponsiveContainer>
+                </div>
+
+                <div className="explanation-block" style={{ marginTop: '1.5rem', padding: '1.5rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', borderLeft: '4px solid var(--accent-red)' }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--text-primary)', fontSize: '1.1rem' }}>📈 Understanding the K-Means Output</h3>
+                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '0.95rem', margin: 0 }}>
+                        We used an Unsupervised Machine Learning algorithm (K-Means) to automatically group videos into 3 distinct "Demand Tiers" based on their views and likes, processed through a logarithmic scaler to handle massive outliers.<br /><br />
+                        <strong>Key Takeaway:</strong> Note the logarithmic scale on the Y-Axis! The algorithm successfully separated the dataset into:<br />
+                        1. <strong>Niche/Low Demand:</strong> Hundreds of thousands of views, but much lower engagement.<br />
+                        2. <strong>Steady/Medium Demand:</strong> Solid performers in the millions, forming the middle class of YouTube.<br />
+                        3. <strong>Viral/High Demand (Outliers):</strong> Videos achieving tens or hundreds of millions of views with engagement stats that astronomically dwarf the other two clusters.
+                    </p>
                 </div>
             </div>
         </div>
