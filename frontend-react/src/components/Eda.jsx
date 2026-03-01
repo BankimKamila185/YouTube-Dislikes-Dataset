@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, ScatterChart, Scatter, ZAxis } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend } from 'recharts';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -29,9 +29,12 @@ export default function Eda({ data }) {
         };
     });
 
-    const cluster0 = data.clusters.points.filter(p => p.cluster === 0);
-    const cluster1 = data.clusters.points.filter(p => p.cluster === 1);
-    const cluster2 = data.clusters.points.filter(p => p.cluster === 2);
+    const clusterData = data.cluster_averages.map(c => ({
+        name: c.cluster,
+        view_count: c.avg_views,
+        likes: c.avg_likes,
+        comment_count: c.avg_comments
+    }));
 
     const code1 = `top_channels = df.groupby('channel_title')['view_count'].sum().nlargest(10)
 top_channels.sort_values().plot(kind='barh', title='Top 10 Channels by Views', color='red')
@@ -56,8 +59,11 @@ plt.show()`;
 kmeans = KMeans(n_clusters=3, random_state=42)
 df['Demand_Cluster'] = kmeans.fit_predict(scaled_features)
 
-sns.scatterplot(x='view_count', y='likes', hue='Demand_Cluster', data=df)
-plt.title('K-Means Clusters: Demand Segmentation')
+cluster_analysis = df.groupby('Demand_Cluster')[['view_count', 'likes', 'comment_count']].mean()
+cluster_analysis.plot(kind='bar', figsize=(10,6), logy=True, cmap='Set2')
+plt.title('Average Engagement Metrics Per Demand Cluster (K-Means)')
+plt.xlabel('Cluster Segment (0 = Niche, 1 = Viral, 2 = Steady)')
+plt.ylabel('Average Count')
 plt.show()`;
 
     return (
@@ -205,16 +211,16 @@ plt.show()`;
 
                 <div className="chart-container" style={{ height: 400 }}>
                     <ResponsiveContainer width="100%" height="100%">
-                        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 40 }}>
+                        <BarChart data={clusterData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
-                            <XAxis type="number" dataKey="x" name="View Count" stroke="var(--text-secondary)" tickFormatter={(tick) => (tick / 1000000).toFixed(1) + 'M'} />
-                            <YAxis type="number" dataKey="y" name="Likes" stroke="var(--text-secondary)" tickFormatter={(tick) => (tick / 1000).toFixed(0) + 'k'} />
-                            <ZAxis range={[50, 50]} />
-                            <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
-                            <Scatter name="Niche/Low Demand" data={cluster0} fill="#58a6ff" />
-                            <Scatter name="Steady/Medium Demand" data={cluster2} fill="#3fb950" />
-                            <Scatter name="Viral/High Demand" data={cluster1} fill="#f85149" />
-                        </ScatterChart>
+                            <XAxis dataKey="name" name="Cluster Segment (0 = Niche, 1 = Viral, 2 = Steady)" stroke="var(--text-secondary)" />
+                            <YAxis scale="log" domain={['auto', 'auto']} name="Average Count" stroke="var(--text-secondary)" tickFormatter={(tick) => tick.toExponential(0)} />
+                            <Tooltip cursor={{ fill: 'var(--bg-primary)' }} contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }} />
+                            <Legend wrapperStyle={{ color: 'var(--text-secondary)' }} />
+                            <Bar dataKey="view_count" name="view_count" fill="#75b79e" />
+                            <Bar dataKey="likes" name="likes" fill="#e89372" />
+                            <Bar dataKey="comment_count" name="comment_count" fill="#93a0c1" />
+                        </BarChart>
                     </ResponsiveContainer>
                 </div>
             </div>

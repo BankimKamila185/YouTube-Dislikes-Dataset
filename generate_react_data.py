@@ -32,19 +32,22 @@ def generate_react_data():
     corr_matrix = numeric_df.corr().round(3)
 
     # 5. K-Means
-    features_kmeans = df[['view_count', 'likes']]
+    features_kmeans = df[['view_count', 'likes', 'comment_count']]
     features_log = np.log1p(features_kmeans)
     scaler_kmeans = StandardScaler()
     features_scaled = scaler_kmeans.fit_transform(features_log)
     kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
-    df['cluster'] = kmeans.fit_predict(features_scaled)
-    sampled_df = df.sample(n=1000, random_state=42)
-    cluster_points = []
-    for _, row in sampled_df.iterrows():
-        cluster_points.append({
-            'x': float(row['view_count']),
-            'y': float(row['likes']),
-            'cluster': int(row['cluster'])
+    df['Demand_Cluster'] = kmeans.fit_predict(features_scaled)
+
+    # Compute average metrics per cluster
+    cluster_analysis = df.groupby('Demand_Cluster')[['view_count', 'likes', 'comment_count']].mean().reset_index()
+    cluster_averages = []
+    for _, row in cluster_analysis.iterrows():
+        cluster_averages.append({
+            'cluster': str(int(row['Demand_Cluster'])),
+            'avg_views': float(row['view_count']),
+            'avg_likes': float(row['likes']),
+            'avg_comments': float(row['comment_count'])
         })
     
     data = {
@@ -64,9 +67,7 @@ def generate_react_data():
             'variables': corr_matrix.columns.tolist(),
             'matrix': corr_matrix.values.tolist()
         },
-        'clusters': {
-            'points': cluster_points
-        }
+        'cluster_averages': cluster_averages
     }
     
     with open('frontend-react/src/data/dashboard_data.json', 'w') as f:
