@@ -179,6 +179,14 @@ kmeans = KMeans(n_clusters = 3, random_state = 42)
                         ))}
                     </div>
                 </div>
+
+                <div className="explanation-block" style={{ marginTop: '1.5rem', padding: '1.5rem', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', borderLeft: '4px solid var(--accent-red)' }}>
+                    <h3 style={{ marginTop: 0, marginBottom: '0.5rem', color: 'var(--text-primary)', fontSize: '1.1rem' }}>📈 What does this correlation mean?</h3>
+                    <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', fontSize: '0.95rem', margin: 0 }}>
+                        This heatmap reveals the linear relationship between our core YouTube metrics. A value of <strong>1.00</strong> means perfect positive correlation, while values closer to <strong>0</strong> mean no relationship.<br /><br />
+                        Notice the strong dark red square between <strong>Views and Likes (0.85)</strong>. This indicates a <em>very</em> strong positive correlation: as views increase, likes reliably increase in a predictable pattern. This suggests that viewer engagement scales naturally with reach. Conversely, the relationship between Views and Dislikes is notably weaker at <strong>0.68</strong>, suggesting that videos going viral do not automatically result in proportional negative feedback.
+                    </p>
+                </div>
             </div>
 
             {/* Section 3 */}
