@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line, CartesianGrid, Legend, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -36,35 +36,60 @@ export default function Eda({ data }) {
         comment_count: c.avg_comments
     }));
 
+    // Data prep for Heatmap (ScatterChart)
+    const correlationMatrix = data.correlation.matrix;
+    const correlationVariables = data.correlation.variables;
+    const heatmapData = [];
+
+    correlationMatrix.forEach((row, rowIndex) => {
+        row.forEach((value, colIndex) => {
+            heatmapData.push({
+                x: rowIndex,
+                y: colIndex,
+                z: value,
+                xLabel: correlationVariables[rowIndex],
+                yLabel: correlationVariables[colIndex]
+            });
+        });
+    });
+
+    // Helper for Heatmap Color
+    const getColor = (value) => {
+        // Simple Coolwarm (Blue to Red) interpolator for -1 to 1
+        return value > 0
+            ? `rgba(248, 81, 73, ${value})` // Red for positive
+            : `rgba(88, 166, 255, ${Math.abs(value)})`; // Blue for negative
+    };
+
     const code1 = `top_channels = df.groupby('channel_title')['view_count'].sum().nlargest(10)
-top_channels.sort_values().plot(kind='barh', title='Top 10 Channels by Views', color='red')
-plt.show()`;
+        top_channels.sort_values().plot(kind = 'barh', title = 'Top 10 Channels by Views', color = 'red')
+        plt.show()`;
 
     const code2 = `import seaborn as sns
-correlation = df[['view_count', 'likes', 'dislikes', 'comments']].corr()
-sns.heatmap(correlation, annot=True, cmap='coolwarm', fmt=".2f")
-plt.show()`;
+        correlation = df[['view_count', 'likes', 'dislikes', 'comments']].corr()
+        sns.heatmap(correlation, annot = True, cmap = 'coolwarm', fmt = ".2f")
+        plt.show()`;
 
     const code3 = `monthly_views = df.groupby(df['published_at'].dt.month)['view_count'].sum()
-monthly_views.plot(kind='line', marker='o')
-plt.show()`;
+        monthly_views.plot(kind = 'line', marker = 'o')
+        plt.show()`;
 
     const code4 = `import seaborn as sns
-plt.figure(figsize=(10, 6))
-sns.histplot(df['dislike_ratio'], bins=50, kde=True)
-plt.title('Distribution of Dislike Ratio (Risk Indicator)')
-plt.show()`;
+        plt.figure(figsize = (10, 6))
+        sns.histplot(df['dislike_ratio'], bins = 50, kde = True)
+        plt.title('Distribution of Dislike Ratio (Risk Indicator)')
+        plt.show()`;
 
     const code5 = `from sklearn.cluster import KMeans
-kmeans = KMeans(n_clusters=3, random_state=42)
-df['Demand_Cluster'] = kmeans.fit_predict(scaled_features)
+kmeans = KMeans(n_clusters = 3, random_state = 42)
+        df['Demand_Cluster'] = kmeans.fit_predict(scaled_features)
 
-cluster_analysis = df.groupby('Demand_Cluster')[['view_count', 'likes', 'comment_count']].mean()
-cluster_analysis.plot(kind='bar', figsize=(10,6), logy=True, cmap='Set2')
-plt.title('Average Engagement Metrics Per Demand Cluster (K-Means)')
-plt.xlabel('Cluster Segment (0 = Niche, 1 = Viral, 2 = Steady)')
-plt.ylabel('Average Count')
-plt.show()`;
+        cluster_analysis = df.groupby('Demand_Cluster')[['view_count', 'likes', 'comment_count']].mean()
+        cluster_analysis.plot(kind = 'bar', figsize = (10, 6), logy = True, cmap = 'Set2')
+        plt.title('Average Engagement Metrics Per Demand Cluster (K-Means)')
+        plt.xlabel('Cluster Segment (0 = Niche, 1 = Viral, 2 = Steady)')
+        plt.ylabel('Average Count')
+        plt.show()`;
 
     return (
         <div className="eda-container">
@@ -117,19 +142,43 @@ plt.show()`;
                     </div>
                 )}
 
-                {/* Heatmap implementation logic visually simulated with a matrix or simple cards, 
-            since recharts doesn't natively do seaborn-style heatmaps perfectly without a custom plugin */}
-                <div className="chart-container" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <div style={{ flex: 1, backgroundColor: '#f85149', padding: '1rem', textAlign: 'center', borderRadius: '4px', color: 'white', fontWeight: 'bold' }}>Views x Views<br />1.00</div>
-                        <div style={{ flex: 1, backgroundColor: '#ff8a8a', padding: '1rem', textAlign: 'center', borderRadius: '4px', color: 'white', fontWeight: 'bold' }}>Views x Likes<br />0.85</div>
-                        <div style={{ flex: 1, backgroundColor: '#ffbfbf', padding: '1rem', textAlign: 'center', borderRadius: '4px', color: 'black', fontWeight: 'bold' }}>Views x Dislikes<br />0.68</div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                        <div style={{ flex: 1, backgroundColor: '#ff8a8a', padding: '1rem', textAlign: 'center', borderRadius: '4px', color: 'white', fontWeight: 'bold' }}>Likes x Views<br />0.85</div>
-                        <div style={{ flex: 1, backgroundColor: '#f85149', padding: '1rem', textAlign: 'center', borderRadius: '4px', color: 'white', fontWeight: 'bold' }}>Likes x Likes<br />1.00</div>
-                        <div style={{ flex: 1, backgroundColor: '#ffbfbf', padding: '1rem', textAlign: 'center', borderRadius: '4px', color: 'black', fontWeight: 'bold' }}>Likes x Dislikes<br />0.72</div>
-                    </div>
+                <div className="chart-container" style={{ height: 400 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 40 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="#30363d" />
+                            <XAxis
+                                type="number"
+                                dataKey="x"
+                                stroke="var(--text-secondary)"
+                                domain={[0, correlationVariables.length - 1]}
+                                tickFormatter={(tick) => correlationVariables[tick]}
+                                interval={0}
+                            />
+                            <YAxis
+                                type="number"
+                                dataKey="y"
+                                stroke="var(--text-secondary)"
+                                domain={[0, correlationVariables.length - 1]}
+                                tickFormatter={(tick) => correlationVariables[tick]}
+                                interval={0}
+                            />
+                            <ZAxis type="number" dataKey="z" range={[500, 500]} />
+                            <Tooltip
+                                cursor={{ strokeDasharray: '3 3' }}
+                                contentStyle={{ backgroundColor: 'var(--bg-card)', borderColor: 'var(--border-color)', color: 'var(--text-primary)' }}
+                                formatter={(value, name, props) => {
+                                    if (name === 'z') return [value.toFixed(2), 'Correlation'];
+                                    return [];
+                                }}
+                                labelFormatter={() => ''}
+                            />
+                            <Scatter data={heatmapData} shape="square">
+                                {heatmapData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={getColor(entry.z)} />
+                                ))}
+                            </Scatter>
+                        </ScatterChart>
+                    </ResponsiveContainer>
                 </div>
             </div>
 
