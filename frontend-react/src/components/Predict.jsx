@@ -81,28 +81,47 @@ export default function Predict() {
                 <div className="prediction-result">
                     <h3>Prediction Result</h3>
 
-                    <div style={{ position: 'relative', width: '200px', height: '100px', margin: '2rem auto', overflow: 'hidden' }}>
+                    <div style={{ position: 'relative', width: '200px', height: '120px', margin: '2rem auto 3rem auto', overflow: 'visible' }}>
+                        {/* Gauge Arc Background */}
                         <div style={{
                             width: '200px', height: '200px',
                             borderRadius: '50%',
                             background: `conic-gradient(from 180deg, var(--success) 0deg 108deg, var(--warning) 108deg 252deg, var(--danger) 252deg 360deg)`,
-                            position: 'absolute', top: 0, left: 0
+                            position: 'absolute', top: 0, left: 0,
+                            clipPath: 'polygon(0 0, 100% 0, 100% 50%, 0 50%)'
                         }}></div>
+
+                        {/* Gauge Inner Cutout */}
                         <div style={{
                             width: '180px', height: '180px',
                             borderRadius: '50%',
                             backgroundColor: 'var(--bg-card)',
-                            position: 'absolute', top: '10px', left: '10px'
+                            position: 'absolute', top: '10px', left: '10px',
+                            clipPath: 'polygon(0 0, 100% 0, 100% 50%, 0 50%)'
                         }}></div>
 
+                        {/* Gauge Needle */}
                         <div style={{
-                            position: 'absolute', bottom: 0, left: '50%',
+                            position: 'absolute', top: '10px', left: '50%',
                             transform: `translateX(-50%) rotate(${(result.probability * 180) - 90}deg)`,
                             transformOrigin: 'bottom center',
-                            width: '4px', height: '90px', backgroundColor: 'white',
-                            transition: 'transform 1s cubic-bezier(0.25, 1, 0.5, 1)'
+                            width: '4px', height: '90px', backgroundColor: 'var(--text-primary)',
+                            transition: 'transform 1s cubic-bezier(0.25, 1, 0.5, 1)',
+                            borderRadius: '2px'
                         }}></div>
-                        <div style={{ position: 'absolute', bottom: '-10px', left: '0', width: '100%', textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
+
+                        {/* Gauge Center Pin */}
+                        <div style={{
+                            position: 'absolute', top: '95px', left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: '14px', height: '14px',
+                            borderRadius: '50%',
+                            backgroundColor: 'var(--text-primary)',
+                            zIndex: 2
+                        }}></div>
+
+                        {/* Text Label */}
+                        <div style={{ position: 'absolute', top: '115px', left: '0', width: '100%', textAlign: 'center', fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--text-primary)' }}>
                             {(result.probability * 100).toFixed(1)}%
                         </div>
                     </div>
